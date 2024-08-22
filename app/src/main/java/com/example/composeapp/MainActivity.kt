@@ -59,7 +59,7 @@ class MainActivity : ComponentActivity() {
         )
         setContent {
             val painter = painterResource(R.drawable.shark)
-            val desc = "q"
+            val desc = ""
             val title = "Shark"
             Box(
                 Modifier
