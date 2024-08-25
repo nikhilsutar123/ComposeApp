@@ -6,6 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,6 +15,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text2.input.TextFieldState
 import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
@@ -42,42 +48,18 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            val snackbarHostState = remember {
-                SnackbarHostState()
-            }
-            val scope = rememberCoroutineScope()
-            var textFieldState by remember {
-                mutableStateOf("")
-            }
-            Scaffold(
-                modifier = Modifier.fillMaxSize().padding(8.dp),
-                snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(it)
-                ) {
-                    TextField(
-                        modifier = Modifier.fillMaxWidth(),
-                        value = textFieldState,
-                        onValueChange = { value ->
-                            textFieldState = value
-                        },
-                        label = { Text(text = "Enter name") }, singleLine = true
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Button(onClick = {
-                        scope.launch {
-                                snackbarHostState.showSnackbar(message = "Hello $textFieldState!")
-                        }
-                    }, modifier = Modifier.align(Alignment.End)){
-                        Text("Click me!")
-                    }
-                }
-            }
+           LazyColumn() {
+               items(count = 20, itemContent = {
+                   Text(
+                       text = "string $it",
+                       style = TextStyle(fontSize = 20.sp),
+                       textAlign = TextAlign.Center,
+                       modifier = Modifier
+                           .fillMaxWidth()
+                           .padding(16.dp)
+                   )
+               })
+           }
         }
     }
 }
