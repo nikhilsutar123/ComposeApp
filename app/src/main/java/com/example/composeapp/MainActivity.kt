@@ -25,13 +25,60 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.delay
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-           AirplaneModeScreen()
+            val value = produceStateDemo(count = 10)
+
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(text = "${value.value}", style = TextStyle(fontSize = 100.sp))
+            }
+        }
+    }
+
+    @Composable
+    fun produceStateDemo(count: Int): State<Int> {
+        return produceState(initialValue = 1) {
+            while (value < count) {
+                delay(1000L)
+                value++
+            }
+        }
+    }
+
+    @Composable
+    fun WithSideEffect() {
+        val count = remember {
+            mutableIntStateOf(0)
+        }
+        SideEffect {
+            Log.d("with Outer side effect", "count is ${count.intValue}")
+        }
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Button(onClick = { count.intValue++ }) {
+                Text("tap me!")
+                SideEffect {
+                    // Called on every recomposition
+                    Log.d("with Inner side effect", "count is ${count.intValue}")
+                }
+            }
+            Spacer(modifier = Modifier.height(10.dp))
+            Text("count ${count.intValue}")
         }
     }
 
@@ -79,7 +126,7 @@ class MainActivity : ComponentActivity() {
         DisposableEffect(key1 = true) {
             Log.d("disposable", "AirplaneModeScreen:entered DisposableEffect...")
             val intentFilter = IntentFilter(Intent.ACTION_AIRPLANE_MODE_CHANGED)
-            context.applicationContext.registerReceiver(broadcastReceiver,intentFilter)
+            context.applicationContext.registerReceiver(broadcastReceiver, intentFilter)
             Log.d("disposable", "AirplaneModeScreen: broadcast registered")
             onDispose {
                 context.applicationContext.unregisterReceiver(broadcastReceiver)
