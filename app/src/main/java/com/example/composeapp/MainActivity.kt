@@ -30,20 +30,25 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 
+import androidx.constraintlayout.compose.ChainStyle
+import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.ConstraintSet
+import androidx.constraintlayout.compose.Dimension
+import kotlinx.coroutines.delay
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            val value = produceStateDemo(count = 10)
-
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Text(text = "${value.value}", style = TextStyle(fontSize = 100.sp))
-            }
+//            val value = produceStateDemo(count = 10)
+            WithSideEffect()
+//            Column(
+//                modifier = Modifier.fillMaxSize(),
+//                horizontalAlignment = Alignment.CenterHorizontally,
+//                verticalArrangement = Arrangement.Center
+//            ) {
+//                Text(text = "${value.value}", style = TextStyle(fontSize = 100.sp))
+//            }
         }
     }
 
@@ -79,6 +84,13 @@ class MainActivity : ComponentActivity() {
             }
             Spacer(modifier = Modifier.height(10.dp))
             Text("count ${count.intValue}")
+            var name by remember {
+                mutableStateOf("")
+            }
+            LaunchedEffect(key1 = Unit) {
+                delay(3000L)
+                name = "nikhil"
+            }
         }
     }
 
@@ -138,5 +150,6 @@ class MainActivity : ComponentActivity() {
             Text(text = "Status: $data")
         }
     }
+
 }
 
