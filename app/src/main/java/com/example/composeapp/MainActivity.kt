@@ -41,7 +41,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
 //            val value = produceStateDemo(count = 10)
-            WithSideEffect()
+            derivedStateDemo()
 //            Column(
 //                modifier = Modifier.fillMaxSize(),
 //                horizontalAlignment = Alignment.CenterHorizontally,
@@ -59,6 +59,22 @@ class MainActivity : ComponentActivity() {
                 delay(1000L)
                 value++
             }
+        }
+    }
+
+    @Composable
+    fun derivedStateDemo(){
+        var count by remember {
+            mutableIntStateOf(0)
+        }
+        val counterText by remember {
+            derivedStateOf {
+              "counter is $count"
+            }
+        }
+
+        Button(onClick = { count++}) {
+            Text(text = counterText)
         }
     }
 
