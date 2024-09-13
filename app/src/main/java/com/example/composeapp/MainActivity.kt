@@ -9,29 +9,14 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.animation.animateColor
-import androidx.compose.animation.core.AnimationSpec
-import androidx.compose.animation.core.EaseIn
-import androidx.compose.animation.core.EaseInOutBounce
-import androidx.compose.animation.core.EaseInQuad
-import androidx.compose.animation.core.Easing
-import androidx.compose.animation.core.FastOutLinearInEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -43,55 +28,42 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.delay
-
-import androidx.constraintlayout.compose.ChainStyle
-import androidx.constraintlayout.compose.ConstraintLayout
-import androidx.constraintlayout.compose.ConstraintSet
-import androidx.constraintlayout.compose.Dimension
 import kotlinx.coroutines.delay
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            var sizeState by remember {
-                mutableStateOf(200.dp)
-            }
-            val size by animateDpAsState(targetValue = sizeState, spring(Spring.DampingRatioHighBouncy))
-            val infiniteTransition = rememberInfiniteTransition()
-            val color by infiniteTransition.animateColor(
-                initialValue = Color.Red,
-                targetValue = Color.Magenta,
-                animationSpec = infiniteRepeatable(
-                    animation = tween(3000),
-                    repeatMode = RepeatMode.Reverse
-                )
+        }
+    }
+
+    @Composable
+    fun CircularProgressBar(
+        percentage: Float,
+        number: Int,
+        animDuration: Int = 1000,
+        animDelay: Int = 0,
+        strokeWidth: Dp = 8.dp,
+        color: Color = Color.Green,
+        fontSize: Dp = 16.dp,
+        radius: Int
+    ) {
+        var animPlayed by remember {
+            mutableStateOf(false)
+        }
+
+        val currPercent by animateFloatAsState(
+            targetValue = if (animPlayed) percentage else 0f,
+            animationSpec = tween(
+                durationMillis = animDuration,
+                delayMillis = animDelay
             )
-            Box(
-                modifier = Modifier
-                    .size(size)
-                    .background(color = color)
-                    .padding(8.dp),
-                contentAlignment = Alignment.Center,
-            ) {
-                Column {
-                    Button(onClick = {
-                        sizeState += 50.dp
-                    }) {
-                        Text("grow!")
-                    }
-                    Spacer(modifier = Modifier.height(10.dp))
-                    Button(onClick = {
-                        sizeState -= 50.dp
-                    }) {
-                        Text("shrink!")
-                    }
-                }
-            }
+        )
+
+        LaunchedEffect(key1 = true) {
+            animPlayed = true
         }
     }
 
