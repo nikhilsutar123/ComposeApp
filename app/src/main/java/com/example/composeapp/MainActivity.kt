@@ -18,8 +18,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -28,27 +31,132 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.focusModifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PointMode
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.times
 import kotlinx.coroutines.delay
+import kotlin.math.cos
+import kotlin.math.sin
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressBar(percentage = 0.8f, number = 100, radius = 100.dp, strokeWidth = 5.dp)
+            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                Timer(
+                    time = 60L * 1000L,
+                    handleColor = Color.Green,
+                    inactiveColor = Color.Gray,
+                    activeColor = Color.Green,
+                    modifier = Modifier.size(200.dp)
+                )
             }
 
+        }
+    }
+
+    @Composable
+    fun Timer(
+        time: Long,
+        handleColor: Color,
+        strokeWidth: Dp = 5.dp,
+        inactiveColor: Color,
+        activeColor: Color,
+        initialValue: Float = 1f,
+        modifier: Modifier = Modifier
+    ) {
+        var size by remember {
+            mutableStateOf(IntSize.Zero)
+        }
+        var value by remember {
+            mutableFloatStateOf(initialValue)
+        }
+        var currentTime by remember {
+            mutableLongStateOf(time)
+        }
+        var isTimerRunning by remember {
+            mutableStateOf(false)
+        }
+        LaunchedEffect(key1 = currentTime, key2 = isTimerRunning) {
+            if (currentTime >= 1 && isTimerRunning) {
+                delay(1000L)
+                currentTime -= 1000L
+                value = currentTime / time.toFloat()
+            }
+        }
+        Box(contentAlignment = Alignment.Center,
+            modifier = modifier.onSizeChanged { size = it }) {
+            Canvas(modifier = modifier) {
+                drawArc(
+                    color = inactiveColor,
+                    startAngle = -215f,
+                    sweepAngle = 250f,
+                    useCenter = false,
+                    size = Size(size.width.toFloat(), size.height.toFloat()),
+                    style = Stroke(strokeWidth.toPx(), cap = StrokeCap.Round),
+                )
+                drawArc(
+                    color = activeColor,
+                    startAngle = -215f,
+                    sweepAngle = 250f * value,
+                    useCenter = false,
+                    size = Size(size.width.toFloat(), size.height.toFloat()),
+                    style = Stroke(strokeWidth.toPx(), cap = StrokeCap.Round),
+                )
+                val center = Offset(size.width / 2f, size.height / 2f)
+                val beta = (250f * value + 145f) * (Math.PI / 180f).toFloat()
+                val r = size.width / 2f
+                val a = cos(beta) * r
+                val b = sin(beta) * r
+                drawPoints(
+                    listOf(
+                        Offset(center.x + a, center.y + b),
+                    ),
+                    pointMode = PointMode.Points,
+                    strokeWidth = (strokeWidth * 3f).toPx(),
+                    color = handleColor,
+                    cap = StrokeCap.Round
+                )
+            }
+        }
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = (currentTime / 1000L).toString(),
+                color = Color.Black,
+                fontSize = TextUnit(20f, TextUnitType.Sp),
+                fontWeight = FontWeight.Bold
+            )
+            Button(
+                onClick = {
+                    if (currentTime <= 0L) {
+                        currentTime = time
+                        isTimerRunning = true
+                    } else {
+                        isTimerRunning = !isTimerRunning
+                    }
+                }, colors = ButtonDefaults.buttonColors(
+                    containerColor = if (!isTimerRunning || currentTime <= 0L) Color.Green
+                    else Color.Red
+                )
+            ) {
+                Text(text = if (isTimerRunning && currentTime >= 0L) "stop" else "start")
+            }
         }
     }
 
