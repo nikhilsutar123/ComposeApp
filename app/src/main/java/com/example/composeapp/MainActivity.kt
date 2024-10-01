@@ -48,6 +48,7 @@ import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.times
+import com.example.composeapp.navigation.Navigation
 import kotlinx.coroutines.delay
 import kotlin.math.cos
 import kotlin.math.sin
@@ -56,16 +57,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                Timer(
-                    time = 60L * 1000L,
-                    handleColor = Color.Green,
-                    inactiveColor = Color.Gray,
-                    activeColor = Color.Green,
-                    modifier = Modifier.size(200.dp)
-                )
-            }
-
+           Navigation()
         }
     }
 
@@ -203,15 +195,15 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    @Composable
-    fun produceStateDemo(count: Int): State<Int> {
-        return produceState(initialValue = 1) {
-            while (value < count) {
-                delay(1000L)
-                value++
-            }
-        }
-    }
+//    @Composable
+//    fun produceStateDemo(count: Int): State<Int> {
+//        return produceState(initialValue = 1) {
+//            while (value < count) {
+//                delay(1000L)
+//                value++
+//            }
+//        }
+//    }
 
     @Composable
     fun derivedStateDemo() {
