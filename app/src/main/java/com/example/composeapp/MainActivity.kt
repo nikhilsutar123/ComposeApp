@@ -9,9 +9,14 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -26,11 +31,16 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxState
+import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableIntStateOf
@@ -38,7 +48,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.focusModifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
@@ -53,10 +62,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.unit.times
 import com.example.composeapp.data.ListItemModel
-import com.example.composeapp.navigation.Navigation
 import kotlinx.coroutines.delay
 import kotlin.math.cos
 import kotlin.math.sin
@@ -71,7 +77,7 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     fun ListItemBuilder() {
-        var items by remember {
+        var dummyItems by remember {
             mutableStateOf(
                 (1..20).map {
                     ListItemModel(title = "item $it", isSelected = false)
@@ -83,13 +89,18 @@ class MainActivity : ComponentActivity() {
                 .fillMaxSize()
                 .padding(8.dp)
         ) {
-            items(count = items.size) { i ->
+            items(count = dummyItems.size) { i ->
+                SwipeToDeleteWidget(item = dummyItems[i], onDelete = {
+                }, animationDuration = 500) {
+
+                }
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 16.dp)
                         .clickable {
-                            items = items.mapIndexed { index, item ->
+
+                            dummyItems = dummyItems.mapIndexed { index, item ->
                                 if (i == index) {
                                     item.copy(isSelected = !item.isSelected)
                                 } else
@@ -99,8 +110,11 @@ class MainActivity : ComponentActivity() {
                     horizontalArrangement = Arrangement.Absolute.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(text = items[i].title, fontSize = TextUnit(20f, type = TextUnitType.Sp))
-                    if (items[i].isSelected) {
+                    Text(
+                        text = dummyItems[i].title,
+                        fontSize = TextUnit(20f, type = TextUnitType.Sp)
+                    )
+                    if (dummyItems[i].isSelected) {
                         Icon(
                             imageVector = Icons.Default.CheckCircle,
                             contentDescription = "selected",
@@ -109,6 +123,66 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             }
+        }
+    }
+
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    fun <T> SwipeToDeleteWidget(
+        item: T,
+        onDelete: (T) -> Unit,
+        animationDuration: Int,
+        content: @Composable (T) -> Unit
+    ) {
+        var isRemoved by remember {
+            mutableStateOf(false)
+        }
+        val state = rememberSwipeToDismissBoxState(confirmValueChange = { value ->
+            if (value == SwipeToDismissBoxValue.EndToStart) {
+                isRemoved = true
+                true
+            } else
+                false
+        })
+
+        LaunchedEffect(key1 = isRemoved) {
+            if(isRemoved){
+                delay(animationDuration.toLong())
+                onDelete(item)
+            }
+        }
+        AnimatedVisibility(
+            visible = !isRemoved, exit = shrinkVertically(
+                animationSpec = tween(
+                    durationMillis = animationDuration
+                ), shrinkTowards = Alignment.Top
+            ) + fadeOut()
+        ) {
+            SwipeToDismissBox(
+                state = state,
+                backgroundContent = {
+                    DeleteBg(state = state)
+                },
+                content = { content(item) },
+            )
+        }
+    }
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    fun DeleteBg(state: SwipeToDismissBoxState) {
+        val color = if (state.targetValue == SwipeToDismissBoxValue.EndToStart) {
+            Color.Red
+        } else
+            Color.Transparent
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(8.dp)
+                .background(color), contentAlignment = Alignment.CenterEnd
+        ) {
+            Icon(imageVector = Icons.Default.Delete, contentDescription = null)
         }
     }
 
