@@ -29,6 +29,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
@@ -37,6 +38,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxDefaults
 import androidx.compose.material3.SwipeToDismissBoxState
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
@@ -71,6 +73,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+
             ListItemBuilder()
         }
     }
@@ -89,37 +92,36 @@ class MainActivity : ComponentActivity() {
                 .fillMaxSize()
                 .padding(8.dp)
         ) {
-            items(count = dummyItems.size) { i ->
-                SwipeToDeleteWidget(item = dummyItems[i], onDelete = {
+            items(items = dummyItems, key = { it.title }) { i ->
+                SwipeToDeleteWidget(item = i, onDelete = {
+                    dummyItems -= i
                 }, animationDuration = 500) {
-
-                }
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 16.dp)
-                        .clickable {
-
-                            dummyItems = dummyItems.mapIndexed { index, item ->
-                                if (i == index) {
-                                    item.copy(isSelected = !item.isSelected)
-                                } else
-                                    item
-                            }
-                        },
-                    horizontalArrangement = Arrangement.Absolute.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = dummyItems[i].title,
-                        fontSize = TextUnit(20f, type = TextUnitType.Sp)
-                    )
-                    if (dummyItems[i].isSelected) {
-                        Icon(
-                            imageVector = Icons.Default.CheckCircle,
-                            contentDescription = "selected",
-                            tint = Color.Green
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 16.dp)
+                            .clickable {
+                                dummyItems = dummyItems.mapIndexed { index, item ->
+                                    if (item.title == dummyItems[index].title) {
+                                        item.copy(isSelected = !item.isSelected)
+                                    } else
+                                        item
+                                }
+                            },
+                        horizontalArrangement = Arrangement.Absolute.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = i.title,
+                            fontSize = TextUnit(20f, type = TextUnitType.Sp)
                         )
+                        if (i.isSelected) {
+                            Icon(
+                                imageVector = Icons.Default.CheckCircle,
+                                contentDescription = "selected",
+                                tint = Color.Green
+                            )
+                        }
                     }
                 }
             }
@@ -129,11 +131,11 @@ class MainActivity : ComponentActivity() {
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
-    fun <T> SwipeToDeleteWidget(
-        item: T,
-        onDelete: (T) -> Unit,
+    fun <ListItemModel> SwipeToDeleteWidget(
+        item: ListItemModel,
+        onDelete: (ListItemModel) -> Unit,
         animationDuration: Int,
-        content: @Composable (T) -> Unit
+        content: @Composable (ListItemModel) -> Unit
     ) {
         var isRemoved by remember {
             mutableStateOf(false)
@@ -147,7 +149,7 @@ class MainActivity : ComponentActivity() {
         })
 
         LaunchedEffect(key1 = isRemoved) {
-            if(isRemoved){
+            if (isRemoved) {
                 delay(animationDuration.toLong())
                 onDelete(item)
             }
@@ -179,10 +181,9 @@ class MainActivity : ComponentActivity() {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(8.dp)
                 .background(color), contentAlignment = Alignment.CenterEnd
         ) {
-            Icon(imageVector = Icons.Default.Delete, contentDescription = null)
+            Icon(imageVector = Icons.Default.Delete, contentDescription = null, tint = Color.White)
         }
     }
 
