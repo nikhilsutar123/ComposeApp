@@ -33,10 +33,19 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemColors
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxDefaults
 import androidx.compose.material3.SwipeToDismissBoxState
@@ -59,12 +68,18 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
+import com.example.composeapp.data.BottomNavItem
 import com.example.composeapp.data.ListItemModel
+import com.example.composeapp.navigation.Navigation
 import kotlinx.coroutines.delay
 import kotlin.math.cos
 import kotlin.math.sin
@@ -73,8 +88,88 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            val navController = rememberNavController()
+            Scaffold(
+                bottomBar = {
+                    BottomNavigationBar(
+                        items = listOf(
+                            BottomNavItem(
+                                name = "Home",
+                                route = "home_screen",
+                                icon = Icons.Default.Home
+                            ),
+                            BottomNavItem(
+                                name = "Notifications",
+                                route = "notifications",
+                                icon = Icons.Default.Notifications,
+                                badgeCount = 100
+                            ),
+                            BottomNavItem(
+                                name = "Settings",
+                                route = "settings",
+                                icon = Icons.Default.Settings
+                            ),
+                        ),
+                        navController = navController, onItemClick = {
+                            navController.navigate(it.route)
+                        })
+                }
+            ) {
+                Box(modifier = Modifier.padding(it)) {
+                    Navigation(navController = navController)
+                }
+            }
+        }
+    }
 
-            ListItemBuilder()
+    @Composable
+    fun BottomNavigationBar(
+        items: List<BottomNavItem>,
+        navController: NavController,
+        modifier: Modifier = Modifier,
+        onItemClick: (BottomNavItem) -> Unit
+    ) {
+        val backStackEntry = navController.currentBackStackEntryAsState()
+        NavigationBar(modifier = modifier, tonalElevation = 8.dp, containerColor = Color.DarkGray) {
+            items.forEach {
+                val selected = it.route == backStackEntry.value?.destination?.route
+                NavigationBarItem(
+                    selected = selected,
+                    onClick = { onItemClick(it) },
+                    colors = NavigationBarItemColors(
+                        selectedIconColor = Color.Green,
+                        unselectedIconColor = Color.White,
+                        disabledIconColor = Color.Transparent,
+                        disabledTextColor = Color.Transparent,
+                        selectedTextColor = Color.Green,
+                        selectedIndicatorColor = Color.Transparent,
+                        unselectedTextColor = Color.Transparent
+                    ),
+                    icon = {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            BadgedBox(badge = {
+                                if (it.badgeCount > 0 && selected) {
+                                    Badge(
+                                        containerColor = Color.Red,
+                                        contentColor = Color.White,
+                                        modifier = Modifier.align(Alignment.TopEnd)
+                                    ) {
+                                        Text(text = it.badgeCount.toString())
+                                    }
+                                }
+                            }) {
+                                Icon(imageVector = it.icon, contentDescription = it.name)
+                            }
+                            if (selected) {
+                                Text(
+                                    it.name,
+                                    textAlign = TextAlign.Center,
+                                    fontSize = TextUnit(value = 10f, type = TextUnitType.Sp)
+                                )
+                            }
+                        }
+                    })
+            }
         }
     }
 
