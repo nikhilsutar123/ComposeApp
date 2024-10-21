@@ -30,6 +30,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
@@ -38,6 +39,7 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
+import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -46,11 +48,15 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemColors
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Shapes
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxDefaults
 import androidx.compose.material3.SwipeToDismissBoxState
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberBottomSheetScaffoldState
+import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -63,6 +69,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PointMode
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.onSizeChanged
@@ -81,6 +88,7 @@ import com.example.composeapp.data.BottomNavItem
 import com.example.composeapp.data.ListItemModel
 import com.example.composeapp.navigation.Navigation
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -88,35 +96,83 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            val navController = rememberNavController()
-            Scaffold(
-                bottomBar = {
-                    BottomNavigationBar(
-                        items = listOf(
-                            BottomNavItem(
-                                name = "Home",
-                                route = "home_screen",
-                                icon = Icons.Default.Home
-                            ),
-                            BottomNavItem(
-                                name = "Notifications",
-                                route = "notifications",
-                                icon = Icons.Default.Notifications,
-                                badgeCount = 100
-                            ),
-                            BottomNavItem(
-                                name = "Settings",
-                                route = "settings",
-                                icon = Icons.Default.Settings
-                            ),
-                        ),
-                        navController = navController, onItemClick = {
-                            navController.navigate(it.route)
-                        })
+            BottomSheetUI()
+//            val navController = rememberNavController()
+//            Scaffold(
+//                bottomBar = {
+//                    BottomNavigationBar(
+//                        items = listOf(
+//                            BottomNavItem(
+//                                name = "Home",
+//                                route = "home_screen",
+//                                icon = Icons.Default.Home
+//                            ),
+//                            BottomNavItem(
+//                                name = "Notifications",
+//                                route = "notifications",
+//                                icon = Icons.Default.Notifications,
+//                                badgeCount = 100
+//                            ),
+//                            BottomNavItem(
+//                                name = "Settings",
+//                                route = "settings",
+//                                icon = Icons.Default.Settings
+//                            ),
+//                        ),
+//                        navController = navController, onItemClick = {
+//                            navController.navigate(it.route)
+//                        })
+//                }
+//            ) {
+//                Box(modifier = Modifier.padding(it)) {
+//                    Navigation(navController = navController)
+//                }
+//            }
+        }
+    }
+
+
+    @Composable
+    fun BottomSheetUI() {
+        val sheetState = rememberBottomSheetState(initialValue = BottomSheetValue.Collapsed)
+        val scaffoldState = rememberBottomSheetScaffoldState(
+            bottomSheetState = sheetState
+        )
+        val scope = rememberCoroutineScope()
+        BottomSheetScaffold(
+            scaffoldState = scaffoldState,
+            sheetContent = {
+                Box(
+                    modifier = Modifier
+                        .height(250.dp)
+                        .fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Bottom Sheet",
+                        fontSize = TextUnit(value = 22f, type = TextUnitType.Sp)
+                    )
                 }
+            },
+            sheetBackgroundColor = Color.Cyan,
+            sheetPeekHeight = 0.dp,
+            sheetShape = Shapes().extraLarge,
+            sheetElevation = 10.dp,
+        ) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
             ) {
-                Box(modifier = Modifier.padding(it)) {
-                    Navigation(navController = navController)
+                Button(onClick = {
+                    scope.launch {
+                        if (sheetState.isCollapsed) {
+                            sheetState.expand()
+                        } else {
+                            sheetState.collapse()
+                        }
+                    }
+                }) {
+                    Text(text = "Toggle")
                 }
             }
         }
